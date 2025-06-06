@@ -6,14 +6,30 @@ module.exports = (sequelize) => {
       type: DataTypes.STRING,
       allowNull: false,
     },
-    description: DataTypes.TEXT,
+    description: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+    gtin: {
+      type: DataTypes.STRING,
+      allowNull: false,
+      unique: true,
+    },
+    image: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+    avg_price: {
+      type: DataTypes.FLOAT,
+      allowNull: true,
+    },
     price: {
       type: DataTypes.FLOAT,
       allowNull: false,
     },
-    stock: {
-      type: DataTypes.INTEGER,
-      defaultValue: 0,
+    barcode_image: {
+      type: DataTypes.STRING,
+      allowNull: true,
     },
   });
 };

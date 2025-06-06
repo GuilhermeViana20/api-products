@@ -1,10 +1,12 @@
 module.exports = (productService) => ({
   create: async (req, res) => {
     try {
-      const product = await productService.createProduct(req.body);
+      const { barcode, price } = req.body;
+      const product = await productService.createProduct(barcode, price);
       res.status(201).json(product);
     } catch (error) {
-      res.status(400).json({ error: error.message });
+      const status = error.message === 'Produto já existe' ? 409 : 400;
+      res.status(status).json({ error: error.message });
     }
   },
 

@@ -1,0 +1,67 @@
+{
+    "description": "SHAMPOO CHÁ VERDE E CÍTRICOS SEDA JOIAS DA NATUREZA FRASCO 325ML",
+    "gtin": 7891150037564,
+    "thumbnail": "https://cdn-cosmos.bluesoft.com.br/products/7891150037564",
+    "width": null,
+    "height": null,
+    "length": null,
+    "net_weight": null,
+    "gross_weight": null,
+    "created_at": "2015-09-02T15:32:38.000-03:00",
+    "updated_at": "2025-06-06T19:18:32.000-03:00",
+    "release_date": null,
+    "price": "R$ 12,99",
+    "avg_price": 12.99,
+    "max_price": 12.99,
+    "min_price": 12.99,
+    "gtins": [
+        {
+            "gtin": 7891150037564,
+            "commercial_unit": {
+                "type_packaging": "Unidade",
+                "quantity_packaging": 1,
+                "ballast": null,
+                "layer": null
+            }
+        },
+        {
+            "gtin": 27891150037568,
+            "commercial_unit": {
+                "type_packaging": "Unidade",
+                "quantity_packaging": 12,
+                "ballast": 5,
+                "layer": 30
+            }
+        },
+        {
+            "gtin": 7891150068414,
+            "commercial_unit": {
+                "type_packaging": "Unidade",
+                "quantity_packaging": 3,
+                "ballast": 0,
+                "layer": 0
+            }
+        }
+    ],
+    "origin": "COSMOS",
+    "barcode_image": "https://api.cosmos.bluesoft.com.br/products/barcode/9A81148227A3B0FDC0FB70694EEE75CF.png",
+    "brand": {
+        "name": "SEDA",
+        "picture": "https://cdn-cosmos.bluesoft.com.br/brands/brand_seda"
+    },
+    "gpc": {
+        "code": "10000368",
+        "description": "Cabelo - Xampu"
+    },
+    "ncm": {
+        "code": "33051000",
+        "description": "Xampus",
+        "full_description": "Óleos essenciais e resinóides; produtos de perfumaria ou de toucador preparados e preparações cosméticas - Preparações capilares. - Xampus",
+        "ex": null
+    },
+    "category": {
+        "id": 157,
+        "description": "Shampoo",
+        "parent_id": 507
+    }
+}

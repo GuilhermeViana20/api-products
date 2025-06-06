@@ -5,10 +5,9 @@ module.exports = (ProductModel) => ({
 
   findAll: () => ProductModel.findAll(),
 
-  update: (id, data) =>
-    ProductModel.update(data, {
-      where: { id },
-    }),
+  update: (id, data) => ProductModel.update(data, { where: { id } }),
 
   delete: (id) => ProductModel.destroy({ where: { id } }),
+
+  findByBarcode: (gtin) => ProductModel.findOne({ where: { gtin: gtin.toString() } }),
 });
