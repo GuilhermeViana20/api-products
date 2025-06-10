@@ -5,7 +5,7 @@ module.exports = (controller) => {
 
   router.post('/', controller.create);
   router.get('/', controller.getAll);
-  router.get('/:id', controller.getById);
+  router.get('/:gtin', controller.getByGtin);
   router.put('/:id', controller.update);
   router.delete('/:id', controller.delete);
 

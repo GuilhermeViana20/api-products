@@ -2,7 +2,7 @@ const { getProductByBarcode } = require('./ProductLookupService');
 
 module.exports = (productRepository) => ({
   createProduct: async (barcode, price = null) => {
-    const existing = await productRepository.findByBarcode(barcode);
+    const existing = await productRepository.find(barcode);
     if (existing) throw new Error('Produto já existe');
 
     const externalData = await getProductByBarcode(barcode);
@@ -24,11 +24,19 @@ module.exports = (productRepository) => ({
 
   },
 
-  getProductById: (id) => productRepository.findById(id),
+  getProduct: (gtin) => productRepository.find(gtin),
 
   getAllProducts: () => productRepository.findAll(),
 
-  updateProduct: (id, data) => productRepository.update(id, data),
+  updateProduct: async (id, data) => {
+    const product = await productRepository.findById(id);
+    if (!product) throw new Error('Produto não existe');
+
+    await productRepository.update(id, data);
+
+    const updatedProduct = await productRepository.findById(id);
+    return updatedProduct;
+  },
 
   deleteProduct: (id) => productRepository.delete(id),
 });

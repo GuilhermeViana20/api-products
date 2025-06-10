@@ -25,7 +25,7 @@ module.exports = (sequelize) => {
     },
     price: {
       type: DataTypes.FLOAT,
-      allowNull: false,
+      allowNull: true,
     },
     barcode_image: {
       type: DataTypes.STRING,

@@ -10,9 +10,9 @@ module.exports = (productService) => ({
     }
   },
 
-  getById: async (req, res) => {
+  getByGtin: async (req, res) => {
     try {
-      const product = await productService.getProductById(req.params.id);
+      const product = await productService.getProduct(req.params.gtin);
       if (!product) return res.status(404).json({ error: 'Produto não encontrado' });
       res.json(product);
     } catch (error) {
@@ -31,8 +31,14 @@ module.exports = (productService) => ({
 
   update: async (req, res) => {
     try {
-      await productService.updateProduct(req.params.id, req.body);
-      res.json({ message: 'Produto atualizado com sucesso' });
+      const product = await productService.updateProduct(req.params.id, req.body);
+      console.log('Produto atualizado:', product);
+      if (!product) return res.status(404).json({ error: 'Produto não encontrado' });
+
+      res.json({
+        message: 'Produto atualizado com sucesso',
+        product: product,
+      });
     } catch (error) {
       res.status(400).json({ error: error.message });
     }
