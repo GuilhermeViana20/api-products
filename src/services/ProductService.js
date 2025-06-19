@@ -1,4 +1,6 @@
+// services/ProductService.js
 const { getProductByBarcode } = require('./ProductLookupService');
+const productMapper = require('../mappers/productMapper');
 
 module.exports = (productRepository) => ({
   createProduct: async (barcode, price = null) => {
@@ -8,25 +10,22 @@ module.exports = (productRepository) => ({
     const externalData = await getProductByBarcode(barcode);
     if (!externalData) throw new Error('Produto não encontrado na API externa');
 
-    try {
-      return productRepository.create({
-        name: externalData.description,
-        description: externalData.description,
-        gtin: externalData.gtin.toString(),
-        image: externalData.thumbnail,
-        avg_price: externalData.avg_price ?? '0.00',
-        price: (price || externalData.avg_price) ?? '0.00',
-        barcode_image: externalData.barcode_image,
-      });
-    } catch (err) {
-      throw err;
-    }
-
+    const productData = productMapper(externalData, price);
+    return productRepository.create(productData);
   },
 
-  getProduct: (gtin) => productRepository.find(gtin),
+  getProduct: async (gtin) => {
+    const product = await productRepository.find(gtin);
+    if (!product) throw new Error('Produto não encontrado');
 
-  getAllProducts: () => productRepository.findAll(),
+    return product;
+  },
+
+  getAllProducts: async () => {
+    const products = await productRepository.findAll();
+    const productData = productMapper(products);
+    return productData;
+  },
 
   updateProduct: async (id, data) => {
     const product = await productRepository.findById(id);
@@ -38,5 +37,10 @@ module.exports = (productRepository) => ({
     return updatedProduct;
   },
 
-  deleteProduct: (id) => productRepository.delete(id),
+  deleteProduct: async (id) => {
+    const product = await productRepository.findById(id);
+    if (!product) throw new Error('Produto não existe');
+
+    productRepository.delete(id)
+  }
 });
