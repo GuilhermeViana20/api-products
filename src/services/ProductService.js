@@ -14,8 +14,8 @@ module.exports = (productRepository) => ({
         description: externalData.description,
         gtin: externalData.gtin.toString(),
         image: externalData.thumbnail,
-        avg_price: externalData.avg_price,
-        price: price || externalData.avg_price,
+        avg_price: externalData.avg_price ?? '0.00',
+        price: (price || externalData.avg_price) ?? '0.00',
         barcode_image: externalData.barcode_image,
       });
     } catch (err) {

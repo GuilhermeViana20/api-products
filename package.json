@@ -6,6 +6,7 @@
   "scripts": {
     "start": "node src/server.js",
     "dev": "nodemon src/server.js",
+    "sync": "node src/config/sync",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],

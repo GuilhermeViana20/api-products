@@ -1,14 +1,9 @@
 module.exports = (
-	userRepository, cartRepository
+	userRepository
 ) => {
 
 	const storeUser = async (data) => {
-		const user = await userRepository.create(data);
-		await cartRepository.create({
-			UserId: user.id,
-			isActive: true
-		});
-		return user;
+		return await userRepository.create(data);
 	};
 
 	const listUsers = () => userRepository.getAll();

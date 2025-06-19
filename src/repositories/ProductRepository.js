@@ -1,7 +1,10 @@
+// repositories/ProductRepository.js
 module.exports = (ProductModel) => ({
   create: (data) => ProductModel.create(data),
 
-  findById: (id) => ProductModel.findOne({ where: { id } }),
+  findById: async (id) => {
+    return await ProductModel.findByPk(id);
+  },
 
   find: (gtin) => ProductModel.findOne({ where: { gtin: gtin.toString() } }),
 

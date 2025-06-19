@@ -1,3 +1,4 @@
+// routes.index.js
 const express = require('express');
 
 module.exports = async (models) => {
@@ -6,12 +7,13 @@ module.exports = async (models) => {
   // Repositórios
   const userRepo = require('../repositories/UserRepository')(models.User);
   const cartRepo = require('../repositories/CartRepository')(models.Cart);
+  const cartItemRepo = require('../repositories/CartItemRepository')(models.CartItem)
   const purchaseRepo = require('../repositories/PurchaseRepository')(models.Purchase);
   const productRepo = require('../repositories/ProductRepository')(models.Product);
 
   // Serviços
   const userService = require('../services/UserService')(userRepo, cartRepo);
-  const cartService = require('../services/CartService')(cartRepo);
+  const cartService = require('../services/CartService')(cartRepo, cartItemRepo, productRepo);
   const purchaseService = require('../services/PurchaseService')(purchaseRepo);
   const productService = require('../services/ProductService')(productRepo);
 
@@ -22,7 +24,7 @@ module.exports = async (models) => {
   const productController = require('../controllers/ProductController')(productService);
 
   // Rotas (somente agora use os controllers)
-  router.use(require('./user/routes')(userController));
+  router.use(require('./user/routes')(userController, cartController));
   router.use(require('./cart/routes')(cartController));
   router.use(require('./purchase/routes')(purchaseController));
   router.use(require('./product/routes')(productController));
