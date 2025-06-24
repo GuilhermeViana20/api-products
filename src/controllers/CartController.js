@@ -1,9 +1,9 @@
 // controllers/CartController.js
 module.exports = (cartService) => ({
   async getActiveCart(req, res) {
-    const userId = req.params.id;
+    const user_id = req.params.id;
     try {
-      const cart = await cartService.getActiveCartByUserId(userId);
+      const cart = await cartService.getActiveCartByUserId(user_id);
       if (!cart) return res.status(404).json({ error: 'Carrinho ativo não encontrado' });
       res.json(cart);
     } catch (error) {
@@ -13,8 +13,8 @@ module.exports = (cartService) => ({
 
   async createCart(req, res) {
     try {
-      const userId = req.params.id;
-      const cart = await cartService.createCart({ ...req.body, userId });
+      const user_id = req.params.id;
+      const cart = await cartService.createCart({ ...req.body, user_id });
       res.status(201).json(cart);
     } catch (error) {
       res.status(500).json({ error: 'Erro ao criar carrinho' });
@@ -23,9 +23,9 @@ module.exports = (cartService) => ({
 
   async addItemToCart(req, res) {
     try {
-      const userId = req.params.id;
+      const user_id = req.params.id;
       const itemData = req.body;
-      const item = await cartService.addItemToCart(userId, itemData);
+      const item = await cartService.addItemToCart(user_id, itemData);
       res.status(201).json(item);
     } catch (error) {
       res.status(500).json({ error: 'Erro ao adicionar item ao carrinho' });
@@ -34,9 +34,9 @@ module.exports = (cartService) => ({
 
   async getCart(req, res) {
     try {
-      const userId = req.params.id;
-      const cartId = req.params.cartId;
-      const cart = await cartService.getCart(userId, cartId);
+      const user_id = req.params.id;
+      const cart_id = req.params.cart_id;
+      const cart = await cartService.getCart(user_id, cart_id);
 
       if (!cart) return res.status(404).json({ error: 'Carrinho não encontrado' });
 
@@ -48,8 +48,8 @@ module.exports = (cartService) => ({
 
   async listCarts(req, res) {
     try {
-      const userId = req.params.id;
-      const carts = await cartService.listCartsByUserId(userId);
+      const user_id = req.params.id;
+      const carts = await cartService.listCartsByUserId(user_id);
       res.json(carts);
     } catch (error) {
       console.error(error);
@@ -59,10 +59,10 @@ module.exports = (cartService) => ({
 
   async updateCartItem(req, res) {
     try {
-      const userId = req.params.id;
+      const user_id = req.params.id;
       const itemData = req.body;
 
-      const updatedItem = await cartService.updateCartItem(userId, itemData);
+      const updatedItem = await cartService.updateCartItem(user_id, itemData);
       res.json(updatedItem);
     } catch (error) {
       console.error(error);
@@ -71,9 +71,9 @@ module.exports = (cartService) => ({
   },
 
   async deleteCart(req, res) {
-    const cartId = req.params.id;
+    const cart_id = req.params.id;
     try {
-      const deleted = await cartService.deleteCart(cartId);
+      const deleted = await cartService.deleteCart(cart_id);
       if (!deleted) return res.status(404).json({ error: 'Carrinho não encontrado' });
       res.json({ message: 'Carrinho removido' });
     } catch (error) {

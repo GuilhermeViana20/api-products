@@ -1,7 +1,7 @@
 const { DataTypes } = require('sequelize');
 
 module.exports = (sequelize) => {
-  return sequelize.define('Product', {
+  const Product = sequelize.define('Product', {
     name: {
       type: DataTypes.STRING,
       allowNull: false,
@@ -31,5 +31,14 @@ module.exports = (sequelize) => {
       type: DataTypes.STRING,
       allowNull: true,
     },
+  }, {
+    createdAt: 'created_at',
+    updatedAt: 'updated_at'
   });
+
+  Product.associate = (models) => {
+    Product.hasMany(models.CartItem, { foreignKey: 'product_id' });
+  };
+
+  return Product;
 };

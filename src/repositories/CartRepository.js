@@ -4,16 +4,16 @@ module.exports = (CartModel) => ({
     return await CartModel.create(data);
   },
 
-  deactivateUserCarts: async (userId) => {
+  deactivateUserCarts: async (user_id) => {
     await CartModel.update(
       { isActive: false },
-      { where: { UserId: userId } }
+      { where: { user_id: user_id } }
     );
   },
 
-  findActiveCartByUserId: async (userId) => {
+  findActiveCartByUserId: async (user_id) => {
     const cart = await CartModel.findOne({
-      where: { UserId: userId, isActive: true },
+      where: { user_id: user_id, is_active: true },
     });
 
     if (!cart) throw new Error('Carrinho não encontrado');
@@ -21,16 +21,16 @@ module.exports = (CartModel) => ({
     return cart;
   },
 
-  findActiveByUserId: async (userId) => {
-    return await CartModel.findOne({ where: { UserId: userId, isActive: true } });
+  findActiveByUserId: async (user_id) => {
+    return await CartModel.findOne({ where: { user_id: user_id, isActive: true } });
   },
 
-  findById: async (userId, cartId) => {
-    return await CartModel.findOne({ where: { UserId: userId, id: cartId } });
+  findById: async (user_id, cart_id) => {
+    return await CartModel.findOne({ where: { id: cart_id, user_id: user_id } });
   },
 
-  findAllByUserId: async (userId) => {
-    return await CartModel.findAll({ where: { UserId: userId } });
+  findAllByUserId: async (user_id) => {
+    return await CartModel.findAll({ where: { user_id: user_id } });
   },
 
   update: async (id, data) => {

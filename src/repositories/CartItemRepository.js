@@ -4,9 +4,9 @@ module.exports = (CartItemModel) => ({
     return await CartItemModel.create(data);
   },
 
-  findByCartIdAndProductId: async (cartId, productId) => {
+  findByCartIdAndProductId: async (cart_id, product_id) => {
     return await CartItemModel.findOne({
-      where: { CartId: cartId, ProductId: productId }
+      where: { cart_id: cart_id, product_id: product_id }
     });
   },
 });

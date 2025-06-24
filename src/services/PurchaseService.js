@@ -1,7 +1,7 @@
 // services/PurchaseService.js
 module.exports = (purchaseRepository) => ({
-  async getPurchasesByUserId(userId) {
-    return await purchaseRepository.findByUserId(userId);
+  async getPurchasesByUserId(user_id) {
+    return await purchaseRepository.findByUserId(user_id);
   },
 
   async createPurchase(data) {

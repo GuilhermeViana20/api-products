@@ -1,7 +1,7 @@
 // repositories/PurchaseRepository.js
 module.exports = (PurchaseModel) => ({
-  findByUserId: async (userId) => {
-    return await PurchaseModel.findAll({ where: { UserId: userId } });
+  findByUserId: async (user_id) => {
+    return await PurchaseModel.findAll({ where: { user_id: user_id } });
   },
 
   create: async (data) => {

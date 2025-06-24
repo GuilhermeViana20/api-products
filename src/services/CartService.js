@@ -1,51 +1,52 @@
 // services/CartService.js
 module.exports = (cartRepository, cartItemRepository, productRepository) => ({
-  async getActiveCartByUserId(userId) {
-    return await cartRepository.findActiveByUserId(userId);
+  async getActiveCartByUserId(user_id) {
+    return await cartRepository.findActiveByUserId(user_id);
   },
 
   async createCart(data) {
-    await cartRepository.deactivateUserCarts(data.userId);
+    await cartRepository.deactivateUserCarts(data.user_id);
 
     return await cartRepository.create(({
-      UserId: data.userId,
+      user_id: data.user_id,
       title: data.title
     }));
   },
 
-  async listCartsByUserId(userId) {
-    return await cartRepository.findAllByUserId(userId);
+  async listCartsByUserId(user_id) {
+    return await cartRepository.findAllByUserId(user_id);
   },
 
-  async addItemToCart(userId, data) {
+  async addItemToCart(user_id, data) {
     try {
-      const activeCart = await cartRepository.findActiveCartByUserId(userId);
-      const product = await productRepository.findById(data.productId);
+      const activeCart = await cartRepository.findActiveCartByUserId(user_id);
+      const product = await productRepository.findById(data.product_id);
 
       if (!activeCart) throw new Error('Nenhum carrinho ativo encontrado');
       if (!product) throw new Error('Produto não encontrado');
 
       return await cartItemRepository.create({
-        CartId: activeCart.id,
-        ProductId: product.id,
+        cart_id: activeCart.id,
+        product_id: product.id,
         quantity: data.quantity,
         price: data.price,
       });
     } catch (error) {
+      console.log(error)
       res.status(500).json({ error: 'Erro ao adicionar item ao carrinho' });
     }
   },
 
-  async getCart(userId, cartId) {
-    return await cartRepository.findById(userId, cartId);
+  async getCart(user_id, cart_id) {
+    return await cartRepository.findById(user_id, cart_id);
   },
 
-  async updateCartItem(userId, itemData) {
-    const activeCart = await cartRepository.findActiveCartByUserId(userId);
+  async updateCartItem(user_id, itemData) {
+    const activeCart = await cartRepository.findActiveCartByUserId(user_id);
     if (!activeCart) throw new Error('Carrinho ativo não encontrado');
 
     // Busca o item no carrinho
-    const existingItem = await cartItemRepository.findByCartIdAndProductId(activeCart.id, itemData.productId);
+    const existingItem = await cartItemRepository.findByCartIdAndProductId(activeCart.id, itemData.product_id);
     if (!existingItem) throw new Error('Item não encontrado no carrinho');
 
     // Atualiza quantity e price (se fornecidos)
