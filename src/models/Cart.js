@@ -6,6 +6,16 @@ module.exports = (sequelize) => {
       type: DataTypes.STRING,
       allowNull: false,
     },
+    total: {
+      type: DataTypes.FLOAT,
+      allowNull: true,
+      defaultValue: 0.00
+    },
+    quantity: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+      defaultValue: 0
+    },
     is_active: {
       type: DataTypes.BOOLEAN,
       defaultValue: true,

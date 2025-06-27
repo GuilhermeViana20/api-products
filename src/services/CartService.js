@@ -1,7 +1,10 @@
+const CartResource = require("../resources/CartResource");
+
 // services/CartService.js
 module.exports = (cartRepository, cartItemRepository, productRepository) => ({
   async getActiveCartByUserId(user_id) {
-    return await cartRepository.findActiveByUserId(user_id);
+    const cart = await cartRepository.findActiveCartByUserId(user_id);
+    return CartResource.toResponse(cart);
   },
 
   async createCart(data) {
@@ -9,12 +12,15 @@ module.exports = (cartRepository, cartItemRepository, productRepository) => ({
 
     return await cartRepository.create(({
       user_id: data.user_id,
-      title: data.title
+      title: data.title,
+      total: data.total ?? 0.00,
+      quantity: data.quantity ?? 0
     }));
   },
 
   async listCartsByUserId(user_id) {
-    return await cartRepository.findAllByUserId(user_id);
+    const carts = await cartRepository.findAllByUserId(user_id);
+    return CartResource.collection(carts);
   },
 
   async addItemToCart(user_id, data) {
@@ -25,12 +31,21 @@ module.exports = (cartRepository, cartItemRepository, productRepository) => ({
       if (!activeCart) throw new Error('Nenhum carrinho ativo encontrado');
       if (!product) throw new Error('Produto não encontrado');
 
-      return await cartItemRepository.create({
+      const itemTotal = data.quantity * data.price;
+
+      await cartItemRepository.create({
         cart_id: activeCart.id,
         product_id: product.id,
         quantity: data.quantity,
         price: data.price,
       });
+
+      // Atualiza total e quantidade do carrinho
+      activeCart.total += itemTotal;
+      activeCart.quantity += data.quantity;
+      await activeCart.save();
+
+      return { message: 'Item adicionado com sucesso', total: activeCart.total, quantity: activeCart.quantity };
     } catch (error) {
       console.log(error)
       res.status(500).json({ error: 'Erro ao adicionar item ao carrinho' });
@@ -38,7 +53,8 @@ module.exports = (cartRepository, cartItemRepository, productRepository) => ({
   },
 
   async getCart(user_id, cart_id) {
-    return await cartRepository.findById(user_id, cart_id);
+    const cart = await cartRepository.findById(user_id, cart_id);
+    return CartResource.toResponse(cart);
   },
 
   async updateCartItem(user_id, itemData) {

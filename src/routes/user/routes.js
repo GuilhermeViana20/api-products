@@ -14,7 +14,7 @@ module.exports = (controller, cartController) => {
   router.get('/:id/cart/:cart_id', cartController.getCart);
   router.get('/:id/carts', cartController.listCarts);
   router.put('/:id/cart/items', cartController.updateCartItem);
-  router.get('/:id/cart/active', cartController.getActiveCart);
+  router.post('/:id/cart/active', cartController.getActiveCart);
 
   return Router().use('/users', router);
 };

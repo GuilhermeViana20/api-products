@@ -17,11 +17,12 @@ module.exports = (
 	};
 
 	const updateUser = async (id, data) => {
-		const user = await getUser(id);
-		if (user) {
-			await userRepository.update(id, data);
+		const userExists = await getUser(id);
+		if (!userExists) {
+			throw new Error('Usuário não encontrado');
 		}
-		return user;
+		await userRepository.update(id, data);
+		return await getUser(id);
 	};
 
 	return {

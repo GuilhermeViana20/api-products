@@ -1,16 +1,31 @@
-// repositories/ProductRepository.js
-module.exports = (ProductModel) => ({
-  create: (data) => ProductModel.create(data),
+const { Op } = require("sequelize");
 
-  findById: async (id) => {
-    return await ProductModel.findByPk(id);
+// repositories/ProductRepository.js
+module.exports = (Product) => ({
+  create: (data) => Product.create(data),
+
+  search: async (query) => {
+    const stringQuery = query.toString();
+
+    return await Product.findAll({
+      where: {
+        [Op.or]: [
+          { name: { [Op.like]: `%${stringQuery}%` } },
+          { gtin: { [Op.like]: `%${stringQuery}%` } }
+        ]
+      }
+    });
   },
 
-  find: (gtin) => ProductModel.findOne({ where: { gtin: gtin.toString() } }),
+  findById: async (id) => {
+    return await Product.findByPk(id);
+  },
 
-  findAll: () => ProductModel.findAll(),
+  find: (gtin) => Product.findOne({ where: { gtin: gtin } }),
 
-  update: (id, data) => ProductModel.update(data, { where: { id } }),
+  findAll: () => Product.findAll(),
 
-  delete: (id) => ProductModel.destroy({ where: { id } }),
+  update: (id, data) => Product.update(data, { where: { id } }),
+
+  delete: (id) => Product.destroy({ where: { id } }),
 });

@@ -32,7 +32,7 @@ module.exports = (userService) => ({
   update: async (req, res) => {
     try {
       const user = await userService.updateUser(req.params.id, req.body);
-      res.json({ message: 'Usuário atualizado com sucesso!', data: user, status: 200 });
+      res.json({ message: 'Usuário atualizado com sucesso!', user: user, status: 200 });
     } catch (error) {
       res.status(400).json({ message: error.message, data: [], status: 400 });
     }

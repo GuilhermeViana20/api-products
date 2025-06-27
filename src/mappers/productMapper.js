@@ -1,18 +1,13 @@
-const formatPrice = (value) => {
-  return `R$ ${parseFloat(value).toFixed(2).replace('.', ',')}`;
-};
-
-module.exports = (externalData, price = null) => {
-  const resolvedAvgPrice = externalData.avg_price ?? '0.00';
-  const resolvedPrice = (price || externalData.avg_price) ?? '0.00';
-
+const productMapper = (externalData, price = null) => {
   return {
     name: externalData.description,
     description: externalData.description,
-    gtin: externalData.gtin.toString(),
+    gtin: externalData.gtin,
     image: externalData.thumbnail,
-    avg_price: formatPrice(resolvedAvgPrice),
-    price: formatPrice(resolvedPrice),
+    avg_price: externalData.avg_price !== null ? parseFloat(price) : 0.0,
+    price: price !== null ? parseFloat(price) : 0.0,
     barcode_image: externalData.barcode_image,
   };
 };
+
+module.exports = { productMapper };
