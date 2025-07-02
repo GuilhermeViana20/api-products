@@ -5,8 +5,7 @@ const getLocalDateTime = require('../utils/getLocalDateTime');
 
 module.exports = (productRepository) => ({
   async index() {
-    const data = await productRepository.index();
-    return productMapper.mapMany(data);
+    return await productRepository.index();
   },
 
   async store(data) {
@@ -33,8 +32,7 @@ module.exports = (productRepository) => ({
   },
 
   async show(gtin) {
-    const productData = await productRepository.show(gtin);
-    return productMapper.map(productData);
+    return await productRepository.show(gtin);
   },
 
   async update(id, data) {
@@ -77,7 +75,7 @@ module.exports = (productRepository) => ({
       (p.name && p.name.toLowerCase().includes(qLower))
     );
 
-    return productMapper.mapMany(results);
+    return results;
   },
 
   async scan(gtin) {

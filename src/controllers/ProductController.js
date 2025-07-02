@@ -1,9 +1,11 @@
 // src/controllers/ProductController.js
+const productResource = require("../resources/ProductResource");
+
 module.exports = (productService) => ({
   index: async (req, res) => {
     try {
       const products = await productService.index();
-      res.json(products);
+      res.json(productResource.collection(products));
     } catch (error) {
       res.status(500).json({ error: error.message });
     }
@@ -13,7 +15,7 @@ module.exports = (productService) => ({
     try {
       const data = req.body;
       const product = await productService.store(data);
-      res.status(201).json(product);
+      res.json(productResource.single(product));
     } catch (error) {
       const status = error.message === 'Produto já existe' ? 409 : 400;
       res.status(status).json({ error: error.message });
@@ -24,7 +26,7 @@ module.exports = (productService) => ({
     try {
       const product = await productService.show(req.params.gtin);
       if (!product) return res.status(404).json({ error: 'Produto não encontrado' });
-      res.json(product);
+      res.json(productResource.single(product));
     } catch (error) {
       res.status(500).json({ error: error.message });
     }
@@ -35,7 +37,7 @@ module.exports = (productService) => ({
       const product = await productService.update(req.params.id, req.body);
       if (!product) return res.status(404).json({ error: 'Produto não encontrado' });
 
-      res.json(product);
+      res.json(productResource.single(product));
     } catch (error) {
       res.status(400).json({ error: error.message });
     }
@@ -55,7 +57,7 @@ module.exports = (productService) => ({
     try {
       const query = req.query.q || '';
       const results = await productService.search(query);
-      res.json(results);
+      res.json(productResource.collection(results));
     } catch (error) {
       res.status(500).json({ error: error.message });
     }

@@ -1,5 +1,7 @@
 const formatPrice = (value) => {
-  return `R$ ${parseFloat(value).toFixed(2).replace('.', ',')}`;
+  const number = parseFloat(value);
+  if (isNaN(number)) return 'R$ 0,00';
+  return `R$ ${number.toFixed(2).replace('.', ',')}`;
 };
 
 module.exports = formatPrice;
