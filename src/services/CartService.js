@@ -1,76 +1,56 @@
-const CartResource = require("../resources/CartResource");
-
-// services/CartService.js
+// src/services/CartService.js
 module.exports = (cartRepository, cartItemRepository, productRepository) => ({
-  async getActiveCartByUserId(user_id) {
-    const cart = await cartRepository.findActiveCartByUserId(user_id);
-    return CartResource.toResponse(cart);
+  async all(user_id) {
+    const carts = await cartRepository.get();
+    return carts.filter(cart => Number(cart.user?.id) === Number(user_id));
   },
 
-  async createCart(data) {
-    await cartRepository.deactivateUserCarts(data.user_id);
+  async show(cart_id, user_id) {
+    const carts = await cartRepository.get();
 
-    return await cartRepository.create(({
-      user_id: data.user_id,
-      title: data.title,
-      total: data.total ?? 0.00,
-      quantity: data.quantity ?? 0
-    }));
+    const cart = carts.find(cart =>
+      Number(cart.id) === Number(cart_id) &&
+      Number(cart.user?.id) === Number(user_id)
+    );
+
+    return cart || null;
   },
 
-  async listCartsByUserId(user_id) {
-    const carts = await cartRepository.findAllByUserId(user_id);
-    return CartResource.collection(carts);
-  },
+  async store(cartData) {
+    const id = await cartRepository.getLastId();
+    const now = new Date().toISOString();
 
-  async addItemToCart(user_id, data) {
-    try {
-      const activeCart = await cartRepository.findActiveCartByUserId(user_id);
-      const product = await productRepository.findById(data.product_id);
+    const carts = await cartRepository.get();
+    const userCarts = carts.filter(c => Number(c.user?.id) === Number(cartData.user_id));
 
-      if (!activeCart) throw new Error('Nenhum carrinho ativo encontrado');
-      if (!product) throw new Error('Produto não encontrado');
-
-      const itemTotal = data.quantity * data.price;
-
-      await cartItemRepository.create({
-        cart_id: activeCart.id,
-        product_id: product.id,
-        quantity: data.quantity,
-        price: data.price,
-      });
-
-      // Atualiza total e quantidade do carrinho
-      activeCart.total += itemTotal;
-      activeCart.quantity += data.quantity;
-      await activeCart.save();
-
-      return { message: 'Item adicionado com sucesso', total: activeCart.total, quantity: activeCart.quantity };
-    } catch (error) {
-      console.log(error)
-      res.status(500).json({ error: 'Erro ao adicionar item ao carrinho' });
+    const activeCart = userCarts.find(c => c.is_active === true);
+    if (activeCart) {
+      await cartRepository.deactivateById(activeCart.id);
     }
+
+    const cart = {
+      id: id.toString(),
+      title: cartData.title ?? '',
+      total: cartData.total ?? '0',
+      quantity: cartData.quantity ?? '0',
+      user_id: cartData.user_id.toString(),
+      is_active: true,
+      created_at: now,
+      updated_at: now,
+    };
+
+    await cartRepository.create(cart);
+
+    return cart;
   },
 
-  async getCart(user_id, cart_id) {
-    const cart = await cartRepository.findById(user_id, cart_id);
-    return CartResource.toResponse(cart);
+  async active(user_id) {
+    const carts = await cartRepository.get();
+
+    const activeCart = carts.find(
+      (cart) => Number(cart.user?.id) === Number(user_id) && cart.is_active
+    );
+
+    return activeCart || null;
   },
-
-  async updateCartItem(user_id, itemData) {
-    const activeCart = await cartRepository.findActiveCartByUserId(user_id);
-    if (!activeCart) throw new Error('Carrinho ativo não encontrado');
-
-    // Busca o item no carrinho
-    const existingItem = await cartItemRepository.findByCartIdAndProductId(activeCart.id, itemData.product_id);
-    if (!existingItem) throw new Error('Item não encontrado no carrinho');
-
-    // Atualiza quantity e price (se fornecidos)
-    const updateData = {};
-    if (itemData.quantity !== undefined) updateData.quantity = itemData.quantity;
-    if (itemData.price !== undefined) updateData.price = itemData.price;
-
-    return await existingItem.update(updateData);
-  }
-  // outros métodos relacionados ao carrinho que precisar
 });

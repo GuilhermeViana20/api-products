@@ -1,15 +1,17 @@
 // routes.index.js
 const express = require('express');
+const { setupSheets } = require('../config/database');
 
 module.exports = async (models) => {
   const router = express.Router();
+  const { sheets, spreadsheetId } = await setupSheets();
 
   // Repositórios
-  const userRepo = require('../repositories/UserRepository')(models.User);
-  const cartRepo = require('../repositories/CartRepository')(models.Cart);
+  const userRepo = require('../repositories/UserRepository')(sheets, spreadsheetId);
+  const cartRepo = require('../repositories/CartRepository')(sheets, spreadsheetId);
   const cartItemRepo = require('../repositories/CartItemRepository')(models.CartItem)
   const purchaseRepo = require('../repositories/PurchaseRepository')(models.Purchase);
-  const productRepo = require('../repositories/ProductRepository')(models.Product);
+  const productRepo = require('../repositories/ProductRepository')(sheets, spreadsheetId);
 
   // Serviços
   const userService = require('../services/UserService')(userRepo, cartRepo);

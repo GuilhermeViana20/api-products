@@ -1,67 +1,86 @@
-// services/ProductService.js
-const { getProductByBarcode } = require('./ProductLookupService');
-const ProductResource = require("../resources/ProductResource");
-const { productMapper } = require('../mappers/productMapper');
+// src/services/ProductService.js
+const ProductLookupService = require('../services/ProductLookupService');
+const productMapper = require('../mappers/productMapper');
+const getLocalDateTime = require('../utils/getLocalDateTime');
 
-module.exports = (productRepository) => {
-  const service = {
-    createProduct: async (barcode, price = null) => {
-      const existing = await productRepository.find(barcode);
-      if (existing) throw new Error('Produto já existe');
+module.exports = (productRepository) => ({
+  async index() {
+    const data = await productRepository.index();
+    return productMapper.mapMany(data);
+  },
 
-      const externalData = await service.consultProduct(barcode);
+  async store(data) {
+    if (!data.gtin) throw new Error('GTIN não informado');
 
-      const productData = productMapper(externalData, price);
-      return productRepository.create(productData);
-    },
+    const exists = await productRepository.show(data.gtin);
+    if (exists) throw new Error('Produto já existe');
 
-    scan: async (barcode) => {
-      const existing = await productRepository.find(barcode);
-      if (existing) return ProductResource.toResponse(existing);
+    const cosmosData = await ProductLookupService.getProductByBarcode(data.gtin);
+    if (!cosmosData) throw new Error('Produto não encontrado na API externa');
 
-      const externalProduct = await service.consultProduct(barcode);
-      return externalProduct;
-    },
+    const productData = {
+      name: cosmosData.description || '',
+      description: cosmosData.description || '',
+      gtin: cosmosData.gtin.toString(),
+      image: cosmosData.thumbnail || 'https://i.ibb.co/fYw4g7L/no-image.jpg',
+      barcode_image: cosmosData.barcode_image || '',
+      price: data.price || '0.00',
+      avg_price: data.avg_price || '0.00',
+    };
 
-    searchProducts: async (query) => {
-      const products = await productRepository.search(query);
-      return ProductResource.collection(products);
-    },
+    const rawProduct = await productRepository.store(productData);
+    return productMapper.map(rawProduct);
+  },
 
-    consultProduct: async (barcode) => {
-      const externalData = await getProductByBarcode(barcode);
-      if (!externalData) throw new Error('Produto não encontrado na API externa');
-      return ProductResource.toResponse(productMapper(externalData));
-    },
+  async show(gtin) {
+    const productData = await productRepository.show(gtin);
+    return productMapper.map(productData);
+  },
 
-    getProduct: async (gtin) => {
-      const product = await productRepository.find(gtin);
-      if (!product) throw new Error('Produto não encontrado');
-      return product;
-    },
+  async update(id, data) {
+    const products = await productRepository.index();
+    const productIndex = products.findIndex(p => p.id === Number(id));
+    if (productIndex === -1) throw new Error('Produto não encontrado');
 
-    getAllProducts: async () => {
-      const products = await productRepository.findAll();
-      return ProductResource.collection(products);
-    },
+    const product = products[productIndex];
 
-    updateProduct: async (id, data) => {
-      const product = await productRepository.findById(id);
-      if (!product) throw new Error('Produto não existe');
+    const updatedProduct = {
+      ...product,
+      ...data,
+      updated_at: getLocalDateTime(),
+    };
 
-      await productRepository.update(id, data);
+    await productRepository.update(Number(id), updatedProduct);
 
-      const updatedProduct = await productRepository.findById(id);
-      return updatedProduct;
-    },
+    return productMapper.map({
+      ...updatedProduct,
+      id: Number(id),
+    });
+  },
 
-    deleteProduct: async (id) => {
-      const product = await productRepository.findById(id);
-      if (!product) throw new Error('Produto não existe');
+  async destroy(id) {
+    const products = await productRepository.index();
+    const productExists = products.some(p => Number(p.id) === Number(id));
+    if (!productExists) throw new Error('Produto não encontrado');
 
-      productRepository.delete(id)
-    }
-  };
+    await productRepository.destroy(id);
+  },
 
-  return service;
-};
+  async search(query) {
+    if (!query) return [];
+
+    const products = await productRepository.index();
+    const qLower = query.toLowerCase();
+
+    const results = products.filter(p =>
+      (p.gtin && p.gtin.toString().includes(query)) ||
+      (p.name && p.name.toLowerCase().includes(qLower))
+    );
+
+    return productMapper.mapMany(results);
+  },
+
+  async scan(gtin) {
+    return await productRepository.findByGtin(gtin);
+  }
+});

@@ -1,55 +1,10 @@
-// controllers/CartController.js
+// src/controllers/CartController.js
 module.exports = (cartService) => ({
-  async getActiveCart(req, res) {
-    const user_id = req.params.id;
+  async index(req, res) {
+    const { user_id } = req.params;
+
     try {
-      const cart = await cartService.getActiveCartByUserId(user_id);
-      if (!cart) return res.status(404).json({ error: 'Carrinho ativo não encontrado' });
-      res.json(cart);
-    } catch (error) {
-      res.status(500).json({ error: 'Erro ao buscar carrinho' });
-    }
-  },
-
-  async createCart(req, res) {
-    try {
-      const user_id = req.params.id;
-      const cart = await cartService.createCart({ ...req.body, user_id });
-      res.status(201).json(cart);
-    } catch (error) {
-      res.status(500).json({ error: 'Erro ao criar carrinho' });
-    }
-  },
-
-  async addItemToCart(req, res) {
-    try {
-      const user_id = req.params.id;
-      const itemData = req.body;
-      const item = await cartService.addItemToCart(user_id, itemData);
-      res.status(201).json(item);
-    } catch (error) {
-      res.status(500).json({ error: 'Erro ao adicionar item ao carrinho' });
-    }
-  },
-
-  async getCart(req, res) {
-    try {
-      const user_id = req.params.id;
-      const cart_id = req.params.cart_id;
-      const cart = await cartService.getCart(user_id, cart_id);
-
-      if (!cart) return res.status(404).json({ error: 'Carrinho não encontrado' });
-
-      res.json(cart);
-    } catch (error) {
-      res.status(500).json({ error: 'Erro ao buscar o carrinho' });
-    }
-  },
-
-  async listCarts(req, res) {
-    try {
-      const user_id = req.params.id;
-      const carts = await cartService.listCartsByUserId(user_id);
+      const carts = await cartService.all(user_id);
       res.json(carts);
     } catch (error) {
       console.error(error);
@@ -57,27 +12,48 @@ module.exports = (cartService) => ({
     }
   },
 
-  async updateCartItem(req, res) {
-    try {
-      const user_id = req.params.id;
-      const itemData = req.body;
+  async show(req, res) {
+    const { cart_id, user_id } = req.params;
 
-      const updatedItem = await cartService.updateCartItem(user_id, itemData);
-      res.json(updatedItem);
+    try {
+      const cart = await cartService.show(cart_id, user_id);
+      if (!cart) return res.status(404).json({ error: 'Carrinho não encontrado' });
+      res.json(cart);
     } catch (error) {
       console.error(error);
-      res.status(500).json({ error: 'Erro ao atualizar item do carrinho' });
+      res.status(500).json({ error: 'Erro ao buscar carrinho' });
     }
   },
 
-  async deleteCart(req, res) {
-    const cart_id = req.params.id;
+  async store(req, res) {
+    const { user_id } = req.params;
+    const { title, total, quantity } = req.body;
+
     try {
-      const deleted = await cartService.deleteCart(cart_id);
-      if (!deleted) return res.status(404).json({ error: 'Carrinho não encontrado' });
-      res.json({ message: 'Carrinho removido' });
+      const newCart = await cartService.store({
+        user_id,
+        title,
+        total,
+        quantity,
+      });
+
+      res.status(201).json(newCart);
     } catch (error) {
-      res.status(500).json({ error: 'Erro ao deletar carrinho' });
+      console.error(error);
+      res.status(500).json({ error: 'Erro ao criar carrinho' });
+    }
+  },
+
+  async active(req, res) {
+    const user_id = req.params.id;
+
+    try {
+      const activeCart = await cartService.active(user_id);
+      if (!activeCart) return res.status(404).json({ error: 'Carrinho ativo não encontrado' });
+      res.json(activeCart);
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ error: 'Erro ao buscar carrinho ativo' });
     }
   },
 });

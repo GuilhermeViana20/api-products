@@ -1,40 +1,41 @@
+// src/controllers/UserController.js
 module.exports = (userService) => ({
-  store: async (req, res) => {
+  async create(req, res) {
+    const data = req.body;
+
     try {
-      const user = await userService.storeUser(req.body);
+      const newUser = await userService.create(data);
+      res.status(201).json(newUser);
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ error: 'Erro ao criar usuário' });
+    }
+  },
+
+  async show(req, res) {
+    const { id } = req.params;
+
+    try {
+      const user = await userService.find(id);
+      if (!user) return res.status(404).json({ error: 'Usuário não encontrado' });
       res.json(user);
     } catch (error) {
-      res.status(400).json({ message: error.message, data: [], status: 400 });
+      console.error(error);
+      res.status(500).json({ error: 'Erro ao buscar usuário' });
     }
   },
 
-  index: async (req, res) => {
-    try {
-      const users = await userService.listUsers();
-      res.json(users);
-    } catch (error) {
-      res.status(400).json({ message: error.message, data: [], status: 400 });
-    }
-  },
+  async update(req, res) {
+    const { id } = req.params;
+    const data = req.body;
 
-  show: async (req, res) => {
     try {
-      const user = await userService.getUser(req.params.id);
-      if (!user) {
-        return res.status(404).json({ error: 'Usuário não encontrado' });
-      }
-      res.json(user);
+      const updatedUser = await userService.update(id, data);
+      if (!updatedUser) return res.status(404).json({ error: 'Usuário não encontrado' });
+      res.json(updatedUser);
     } catch (error) {
-      res.status(400).json({ message: error.message, data: [], status: 400 });
-    }
-  },
-
-  update: async (req, res) => {
-    try {
-      const user = await userService.updateUser(req.params.id, req.body);
-      res.json({ message: 'Usuário atualizado com sucesso!', user: user, status: 200 });
-    } catch (error) {
-      res.status(400).json({ message: error.message, data: [], status: 400 });
+      console.error(error);
+      res.status(500).json({ error: 'Erro ao atualizar usuário' });
     }
   },
 });

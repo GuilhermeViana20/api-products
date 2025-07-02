@@ -1,20 +1,18 @@
+// src/controllers/ProductController.js
 module.exports = (productService) => ({
-  search: async (req, res) => {
+  index: async (req, res) => {
     try {
-      const { q } = req.query;
-      if (!q) return res.status(400).json({ error: 'Parâmetro de busca "q" é obrigatório' });
-
-      const products = await productService.searchProducts(q);
+      const products = await productService.index();
       res.json(products);
     } catch (error) {
       res.status(500).json({ error: error.message });
     }
   },
 
-  create: async (req, res) => {
+  store: async (req, res) => {
     try {
-      const { barcode, price } = req.body;
-      const product = await productService.createProduct(barcode, price);
+      const data = req.body;
+      const product = await productService.store(data);
       res.status(201).json(product);
     } catch (error) {
       const status = error.message === 'Produto já existe' ? 409 : 400;
@@ -22,20 +20,11 @@ module.exports = (productService) => ({
     }
   },
 
-  getByGtin: async (req, res) => {
+  show: async (req, res) => {
     try {
-      const product = await productService.getProduct(req.params.gtin);
+      const product = await productService.show(req.params.gtin);
       if (!product) return res.status(404).json({ error: 'Produto não encontrado' });
       res.json(product);
-    } catch (error) {
-      res.status(500).json({ error: error.message });
-    }
-  },
-
-  getAll: async (req, res) => {
-    try {
-      const products = await productService.getAllProducts();
-      res.json(products);
     } catch (error) {
       res.status(500).json({ error: error.message });
     }
@@ -43,39 +32,32 @@ module.exports = (productService) => ({
 
   update: async (req, res) => {
     try {
-      const product = await productService.updateProduct(req.params.id, req.body);
-      console.log('Produto atualizado:', product);
+      const product = await productService.update(req.params.id, req.body);
       if (!product) return res.status(404).json({ error: 'Produto não encontrado' });
 
-      res.json({
-        message: 'Produto atualizado com sucesso',
-        product: product,
-      });
+      res.json(product);
     } catch (error) {
       res.status(400).json({ error: error.message });
     }
   },
 
-  delete: async (req, res) => {
+  destroy: async (req, res) => {
     try {
-      await productService.deleteProduct(req.params.id);
+      const id = Number(req.params.id);
+      await productService.destroy(id);
       res.json({ message: 'Produto removido com sucesso' });
     } catch (error) {
       res.status(500).json({ error: error.message });
     }
   },
 
-  consultProduct: async (req, res) => {
+  search: async (req, res) => {
     try {
-      const { gtin } = req.query;
-      if (!gtin) return res.status(400).json({ error: 'Parâmetro gtin é obrigatório' });
-
-      const product = await productService.scan(gtin);
-      if (!product) return res.status(404).json({ error: 'Produto não encontrado' });
-
-      res.json(product);
+      const query = req.query.q || '';
+      const results = await productService.search(query);
+      res.json(results);
     } catch (error) {
       res.status(500).json({ error: error.message });
     }
-  }
+  },
 });
