@@ -62,4 +62,14 @@ module.exports = (productService) => ({
       res.status(500).json({ error: error.message });
     }
   },
+
+  scan: async (req, res) => {
+    try {
+      const query = req.query.gtin || '';
+      const result = await productService.scan(query);
+      res.json(productResource.single(result));
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  }
 });

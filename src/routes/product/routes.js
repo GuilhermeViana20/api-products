@@ -9,8 +9,7 @@ module.exports = (controller) => {
   router.put('/:id', controller.update);
   router.delete('/:id', controller.destroy);
   router.post('/search', controller.search);
-
-  // router.post('/scan', controller.consultProduct);
+  router.post('/scan', controller.scan);
 
   return Router().use('/products', router);
 };

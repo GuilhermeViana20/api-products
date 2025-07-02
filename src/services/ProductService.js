@@ -1,6 +1,5 @@
 // src/services/ProductService.js
 const ProductLookupService = require('../services/ProductLookupService');
-const productMapper = require('../mappers/productMapper');
 const getLocalDateTime = require('../utils/getLocalDateTime');
 
 module.exports = (productRepository) => ({
@@ -27,8 +26,7 @@ module.exports = (productRepository) => ({
       avg_price: data.avg_price || '0.00',
     };
 
-    const rawProduct = await productRepository.store(productData);
-    return productMapper.map(rawProduct);
+    return await productRepository.store(productData);
   },
 
   async show(gtin) {
@@ -50,10 +48,10 @@ module.exports = (productRepository) => ({
 
     await productRepository.update(Number(id), updatedProduct);
 
-    return productMapper.map({
+    return {
       ...updatedProduct,
       id: Number(id),
-    });
+    };
   },
 
   async destroy(id) {
@@ -79,6 +77,11 @@ module.exports = (productRepository) => ({
   },
 
   async scan(gtin) {
-    return await productRepository.findByGtin(gtin);
+    if (!gtin) throw new Error('GTIN não informado');
+
+    const cosmosData = await ProductLookupService.getProductByBarcode(gtin);
+    if (!cosmosData) throw new Error('Produto não encontrado na API externa');
+
+    return cosmosData;
   }
 });
