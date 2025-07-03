@@ -1,6 +1,7 @@
 // src/services/ProductService.js
 const ProductLookupService = require('../services/ProductLookupService');
 const getLocalDateTime = require('../utils/getLocalDateTime');
+const now = getLocalDateTime();
 
 module.exports = (productRepository) => ({
   async index() {
@@ -24,6 +25,8 @@ module.exports = (productRepository) => ({
       barcode_image: cosmosData.barcode_image || '',
       price: data.price || '0.00',
       avg_price: data.avg_price || '0.00',
+      created_at: now,
+      updated_at: now
     };
 
     return await productRepository.store(productData);
