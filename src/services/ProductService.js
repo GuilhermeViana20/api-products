@@ -4,8 +4,13 @@ const getLocalDateTime = require('../utils/getLocalDateTime');
 const now = getLocalDateTime();
 
 module.exports = (productRepository) => ({
-  async index() {
-    return await productRepository.index();
+  async index(page = 1, perPage = 10) {
+    const allProducts = await productRepository.index();
+    const total = allProducts.length;
+    const start = (page - 1) * perPage;
+    const data = allProducts.slice(start, start + perPage);
+
+    return { data, total };
   },
 
   async store(data) {

@@ -141,7 +141,6 @@ module.exports = (sheets, spreadsheetId, userRepository) => {
         valueInputOption: 'USER_ENTERED',
         resource: { values: [updatedRow] }
       });
-    }
-
+    },
   };
 };

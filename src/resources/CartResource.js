@@ -10,7 +10,7 @@ const CartResource = {
       is_active: cart.is_active,
       description: cart.description,
       total: formatPrice(cart.total),
-      products: cart.items?.map(item => ({
+      products: cart.products?.map(item => ({
         id: item.product?.id,
         name: item.product?.name,
         image: item.product?.image,

@@ -1,5 +1,5 @@
 // src/controllers/CartController.js
-const cartResource = require('../resources/cartResource');
+const cartResource = require('../resources/CartResource');
 
 module.exports = (cartService) => ({
   async index(req, res) {

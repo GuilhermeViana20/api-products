@@ -2,41 +2,38 @@ const formatPrice = require('../utils/formatPrice');
 const formatDate = require('../utils/formatDate');
 
 const productResource = {
-  toJSON(item) {
+  toJSON(product) {
     return {
-      id: Number(item.id),
-      name: item.name,
-      description: item.description,
-      gtin: parseInt(item.gtin) || '',
-      image: item.image,
-      avg_price: formatPrice(item.avg_price),
-      price: formatPrice(item.price),
-      barcode_image: item.barcode_image,
-      created_at: formatDate(item.created_at),
-      updated_at: formatDate(item.updated_at),
+      id: Number(product.id),
+      name: product.name,
+      description: product.description,
+      gtin: parseInt(product.gtin) || '',
+      image: product.image,
+      avg_price: formatPrice(product.avg_price),
+      price: formatPrice(product.price),
+      barcode_image: product.barcode_image,
+      created_at: formatDate(product.created_at),
+      updated_at: formatDate(product.updated_at),
     };
   },
 
-  collection(items, page = 1, perPage = 10) {
-    const total = items.length;
-    const paginatedItems = items.slice((page - 1) * perPage, page * perPage);
-
+  collection(products, currentPage = 1, perPage = 10, total = 0) {
     return {
       message: 'Produtos retornados com sucesso!',
-      products: paginatedItems.map(this.toJSON),
+      products: products.map(this.toJSON),
       meta: {
         total,
         per_page: perPage,
-        current_page: page,
+        current_page: currentPage,
         last_page: Math.ceil(total / perPage),
       }
     };
   },
 
-  single(item) {
+  single(product) {
     return {
       message: 'Produto retornado com sucesso!',
-      product: this.toJSON(item),
+      product: this.toJSON(product),
     };
   }
 };

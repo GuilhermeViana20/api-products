@@ -4,8 +4,12 @@ const productResource = require("../resources/ProductResource");
 module.exports = (productService) => ({
   index: async (req, res) => {
     try {
-      const products = await productService.index();
-      res.json(productResource.collection(products));
+      const page = parseInt(req.query.page) || 1;
+      const perPage = 10;
+
+      const products = await productService.index(page, perPage);
+
+      res.json(productResource.collection(products.data, page, perPage, products.total));
     } catch (error) {
       res.status(500).json({ error: error.message });
     }

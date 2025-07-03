@@ -19,11 +19,12 @@ module.exports = (cartRepository, cartItemRepository) => ({
   async show(cart_id, user_id) {
     const carts = await cartRepository.index(user_id);
 
-    const cart = carts.find(cart =>
-      Number(cart.id) === Number(cart_id)
-    );
+    const cart = carts.find(cart => cart && Number(cart.id) === Number(cart_id));
+    if (!cart) return null;
 
-    return cart || null;
+    cart.products = await cartItemRepository.getItemsByCartId(cart_id);
+
+    return cart;
   },
 
   async store(cartData) {
@@ -60,8 +61,8 @@ module.exports = (cartRepository, cartItemRepository) => ({
     
     if (!activeCart) return null;
 
-    const items = await cartItemRepository.getItemsByCartId(activeCart.id);
-    return { ...activeCart, items };
+    const products = await cartItemRepository.getItemsByCartId(activeCart.id);
+    return { ...activeCart, products };
   },
 
   async addToCart(user_id, { product_id, price, quantity }) {
