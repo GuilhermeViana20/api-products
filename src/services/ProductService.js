@@ -79,9 +79,22 @@ module.exports = (productRepository) => ({
   async scan(gtin) {
     if (!gtin) throw new Error('GTIN não informado');
 
+    const existingProduct = await productRepository.show(gtin);
+    if (existingProduct) return existingProduct;
+
     const cosmosData = await ProductLookupService.getProductByBarcode(gtin);
     if (!cosmosData) throw new Error('Produto não encontrado na API externa');
 
-    return cosmosData;
+    const productData = {
+      name: cosmosData.description || '',
+      description: cosmosData.description || '',
+      gtin: cosmosData.gtin.toString(),
+      image: cosmosData.thumbnail || 'https://i.ibb.co/fYw4g7L/no-image.jpg',
+      barcode_image: cosmosData.barcode_image || '',
+      price: '0.00',
+      avg_price: '0.00',
+    };
+
+    return await productRepository.store(productData);
   }
 });

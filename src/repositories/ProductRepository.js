@@ -142,6 +142,11 @@ module.exports = (sheets, spreadsheetId) => {
       });
     },
 
+    async find(product_id) {
+      const products = await self.index();
+      return products.find(p => Number(p.id) === Number(product_id)) || null;
+    },
+
     async lastItem() {
       const products = await self.index();
       const ids = products.map(p => p.id);

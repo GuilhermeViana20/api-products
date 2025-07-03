@@ -1,12 +1,12 @@
 const formatPrice = require('../utils/formatPrice');
 
 const CartResource = {
-  toResponse: (cart) => {
+  toJSON(cart) {
     return {
-      id: cart.id,
-      store_name: cart.title,
-      quantity: cart.items?.length || 0,
-      quantity_term: `${cart.items?.length || 0} produtos`,
+      id: Number(cart.id),
+      store_name: cart.store_name,
+      quantity: cart.quantity,
+      quantity_term: `${cart.quantity} produtos`,
       is_active: cart.is_active,
       description: cart.description,
       total: formatPrice(cart.total),
@@ -20,7 +20,22 @@ const CartResource = {
     };
   },
 
-  collection: (carts) => carts.map(CartResource.toResponse),
+  collection(carts) {
+    return {
+      message: 'Carrinhos retornados com sucesso!',
+      carts: carts.map(cart => CartResource.toJSON(cart)),
+      meta: {
+        total: carts.length,
+      }
+    };
+  },
+
+  single(cart) {
+    return {
+      message: 'Carrinho retornado com sucesso!',
+      cart: CartResource.toJSON(cart)
+    };
+  }
 };
 
 module.exports = CartResource;
