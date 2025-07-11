@@ -20,12 +20,15 @@ const CartResource = {
     };
   },
 
-  collection(carts) {
+  collection(carts, currentPage = 1, perPage = 10, total = 0) {
     return {
       message: 'Carrinhos retornados com sucesso!',
-      carts: carts.map(cart => CartResource.toJSON(cart)),
+      carts: carts.map(this.toJSON),
       meta: {
-        total: carts.length,
+        total,
+        per_page: perPage,
+        current_page: currentPage,
+        last_page: Math.ceil(total / perPage),
       }
     };
   },
@@ -33,7 +36,7 @@ const CartResource = {
   single(cart) {
     return {
       message: 'Carrinho retornado com sucesso!',
-      cart: CartResource.toJSON(cart)
+      cart: this.toJSON(cart),
     };
   }
 };

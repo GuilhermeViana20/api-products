@@ -1,8 +1,11 @@
-const { Router } = require('express');
+// File: src/routes/cart/routes.js
+const auth = require('../../middlewares/authMiddleware');
 
 module.exports = (controller) => {
-  const router = Router();
-  // outras rotas...
+  const router = require('express').Router();
 
-  return Router().use('/carts', router);
+  router.use(auth);
+  // rotas do carrinho...
+
+  return router;
 };

@@ -1,5 +1,6 @@
 // src/routes/user/routes.js
 const { Router } = require('express');
+const auth = require('../../middlewares/authMiddleware');
 
 module.exports = (controller, cartController, services = {}) => {
   const router = Router();
@@ -9,8 +10,14 @@ module.exports = (controller, cartController, services = {}) => {
     next();
   });
 
-  router.post('/', controller.create);
-  router.get('/:id', controller.show);
+  // rotas públicas
+  router.post('/login', controller.login);
+  router.post('/register', controller.register);
+  router.get('/confirm-email/:token', controller.confirmEmail);
+
+  // rotas protegidas
+  // router.use(auth);
+
   router.put('/:id', controller.update);
 
   router.get('/:user_id/carts', cartController.index);
@@ -19,8 +26,5 @@ module.exports = (controller, cartController, services = {}) => {
   router.post('/:id/cart/active', cartController.active);
   router.post('/:id/cart/items', cartController.addToCart);
 
-  // router.post('/:id/cart/items', cartController.addItemToCart);
-  // router.put('/:id/cart/items', cartController.updateCartItem);
-
-  return Router().use('/users', router);
+  return router;
 };

@@ -4,10 +4,17 @@ const cartResource = require('../resources/CartResource');
 module.exports = (cartService) => ({
   async index(req, res) {
     const { user_id } = req.params;
+    const page = parseInt(req.query.page) || 1;
+    const perPage = parseInt(req.query.per_page) || 5;
 
     try {
       const carts = await cartService.index(user_id);
-      res.json(cartResource.collection(carts));
+
+      const total = carts.length;
+      const offset = (page - 1) * perPage;
+      const paginated = carts.slice(offset, offset + perPage);
+
+      res.json(cartResource.collection(paginated, page, perPage, total));
     } catch (error) {
       console.error(error);
       res.status(500).json({ error: 'Erro ao listar carrinhos' });
@@ -29,12 +36,12 @@ module.exports = (cartService) => ({
 
   async store(req, res) {
     const { user_id } = req.params;
-    const { title, total, quantity } = req.body;
+    const { store_name, total, quantity } = req.body;
 
     try {
       const newCart = await cartService.store({
         user_id,
-        title,
+        store_name,
         total,
         quantity,
       });

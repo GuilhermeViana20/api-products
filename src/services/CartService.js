@@ -17,13 +17,11 @@ module.exports = (cartRepository, cartItemRepository) => ({
   },
 
   async show(cart_id, user_id) {
-    const carts = await cartRepository.index(user_id);
-
+    const carts = await cartRepository.getByUserId(user_id);
     const cart = carts.find(cart => cart && Number(cart.id) === Number(cart_id));
     if (!cart) return null;
 
     cart.products = await cartItemRepository.getItemsByCartId(cart_id);
-
     return cart;
   },
 
@@ -41,7 +39,7 @@ module.exports = (cartRepository, cartItemRepository) => ({
 
     const cart = {
       id: id.toString(),
-      title: cartData.title ?? '',
+      store_name: cartData.store_name ?? '',
       total: cartData.total ?? '0',
       quantity: cartData.quantity ?? '0',
       user_id: cartData.user_id.toString(),

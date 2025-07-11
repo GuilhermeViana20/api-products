@@ -60,8 +60,16 @@ module.exports = (productService) => ({
   search: async (req, res) => {
     try {
       const query = req.query.q || '';
+      const page = parseInt(req.query.page) || 1;
+      const perPage = parseInt(req.query.per_page) || 10;
+
       const results = await productService.search(query);
-      res.json(productResource.collection(results));
+
+      const total = results.length;
+      const offset = (page - 1) * perPage;
+      const paginated = results.slice(offset, offset + perPage);
+
+      res.json(productResource.collection(paginated, page, perPage, total));
     } catch (error) {
       res.status(500).json({ error: error.message });
     }

@@ -1,22 +1,38 @@
 // src/controllers/UserController.js
 module.exports = (userService) => ({
-  async create(req, res) {
-    const data = req.body;
-
+  async register(req, res) {
     try {
-      const newUser = await userService.create(data);
+      const newUser = await userService.register(req.body);
       res.status(201).json(newUser);
     } catch (error) {
       console.error(error);
-      res.status(500).json({ error: 'Erro ao criar usuário' });
+      res.status(400).json({ error: error.message });
+    }
+  },
+
+  async login(req, res) {
+    const { email, password } = req.body;
+    try {
+      const user = await userService.login(email, password);
+      res.json(user);
+    } catch (error) {
+      console.error(error);
+      res.status(401).json({ error: error.message });
+    }
+  },
+
+  async confirmEmail(req, res) {
+    try {
+      const result = await userService.confirmUserEmail(req.params.token);
+      res.json(result);
+    } catch (error) {
+      res.status(400).json({ error: error.message });
     }
   },
 
   async show(req, res) {
-    const { id } = req.params;
-
     try {
-      const user = await userService.find(id);
+      const user = await userService.find(req.params.id);
       if (!user) return res.status(404).json({ error: 'Usuário não encontrado' });
       res.json(user);
     } catch (error) {
@@ -26,16 +42,16 @@ module.exports = (userService) => ({
   },
 
   async update(req, res) {
-    const { id } = req.params;
-    const data = req.body;
-
     try {
-      const updatedUser = await userService.update(id, data);
+      const updatedUser = await userService.update(req.params.id, req.body);
       if (!updatedUser) return res.status(404).json({ error: 'Usuário não encontrado' });
-      res.json(updatedUser);
+      res.json({
+        'message': 'Usuário atualizado com sucesso',
+        'user': updatedUser
+      });
     } catch (error) {
       console.error(error);
-      res.status(500).json({ error: 'Erro ao atualizar usuário' });
+      res.status(400).json({ error: error.message });
     }
   },
 });

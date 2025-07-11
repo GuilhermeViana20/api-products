@@ -1,7 +1,10 @@
-const { Router } = require('express');
+// File: src/routes/product/routes.js
+const auth = require('../../middlewares/authMiddleware');
 
 module.exports = (controller) => {
-  const router = Router();
+  const router = require('express').Router();
+
+  router.use(auth);
 
   router.get('/', controller.index);
   router.post('/', controller.store);
@@ -11,5 +14,5 @@ module.exports = (controller) => {
   router.post('/search', controller.search);
   router.post('/scan', controller.scan);
 
-  return Router().use('/products', router);
+  return router;
 };

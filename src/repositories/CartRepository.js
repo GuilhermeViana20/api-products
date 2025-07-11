@@ -1,14 +1,27 @@
 // src/repositories/CartRepository.js
-const createUserRepository = require('./UserRepository');
-
 module.exports = (sheets, spreadsheetId, userRepository) => {
   const range = 'carts!A2:H';
+  const getLocalDateTime = require('../utils/getLocalDateTime');
+
+  async function getAllRows() {
+    const response = await sheets.spreadsheets.values.get({ spreadsheetId, range });
+    return response.data.values || [];
+  }
 
   return {
     async index(user_id) {
+      const rows = await getAllRows();
+      const user = await userRepository.find(user_id);
+
+      return rows
+        .map((row) => row[7] === user_id.toString() ? mapRow(row, user) : null)
+        .filter(Boolean);
+    },
+
+    async getByUserId(user_id) {
       const response = await sheets.spreadsheets.values.get({
         spreadsheetId,
-        range: 'carts!A2:H',
+        range,
       });
 
       const rows = response.data.values || [];
@@ -23,7 +36,7 @@ module.exports = (sheets, spreadsheetId, userRepository) => {
             store_name: row[1],
             total: parseFloat(row[2]) || 0,
             quantity: Number(row[3]),
-            is_active: row[4]?.toString().toLowerCase() === 'true',
+            is_active: row[4],
             created_at: row[5],
             updated_at: row[6],
             user: await userRepository.find(user_id),
@@ -35,35 +48,29 @@ module.exports = (sheets, spreadsheetId, userRepository) => {
         }
       }));
 
-      return carts.filter(cart => cart !== null);
+      return carts.filter(c => c !== null);
     },
 
     async create(cartData) {
-      const {
-        id,
-        title,
-        total,
-        quantity,
-        is_active,
-        created_at,
-        updated_at,
-        user_id,
-      } = cartData;
+      const id = await this.lastItem();
+      const now = getLocalDateTime();
+
+      const { store_name, total, quantity, user_id } = cartData;
 
       await sheets.spreadsheets.values.append({
         spreadsheetId,
-        range: 'carts!A2:H',
+        range,
         valueInputOption: 'USER_ENTERED',
         insertDataOption: 'INSERT_ROWS',
         resource: {
           values: [[
             id.toString(),
-            title,
+            store_name,
             total.toString(),
             quantity.toString(),
-            is_active ? true : false,
-            created_at,
-            updated_at,
+            true,
+            now,
+            now,
             user_id.toString()
           ]],
         },
@@ -84,25 +91,15 @@ module.exports = (sheets, spreadsheetId, userRepository) => {
         .map((row) => parseInt(row[0]))
         .filter((id) => !isNaN(id));
 
-      const lastId = Math.max(...ids, 0);
-
-      return lastId + 1;
+      return Math.max(...ids, 0) + 1;
     },
 
     async deactivate(cartId) {
-      const response = await sheets.spreadsheets.values.get({
-        spreadsheetId,
-        range: 'carts!A2:H',
-      });
-
-      const rows = response.data.values || [];
-
+      const rows = await getAllRows();
       const rowIndex = rows.findIndex(row => Number(row[0]) === Number(cartId));
-
       if (rowIndex === -1) return;
 
       const targetRow = rowIndex + 2;
-
       await sheets.spreadsheets.values.update({
         spreadsheetId,
         range: `carts!E${targetRow}`,
