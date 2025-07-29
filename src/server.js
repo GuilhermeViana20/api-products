@@ -4,7 +4,7 @@ const setupRoutes = require('./routes');
 const cors = require('cors');
 
 const app = express();
-app.use(cors({ origin: ['http://localhost:5173', 'http://127.0.0.1:5173', 'https://api-products-theta.vercel.app'] }));
+app.use(cors({ origin: ['http://localhost:5173', 'http://127.0.0.1:5173', 'https://app-scanner.netlify.app'] }));
 app.use(express.json());
 
 (async () => {
