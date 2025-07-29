@@ -10,10 +10,11 @@ const CartResource = {
       is_active: cart.is_active,
       description: cart.description,
       total: formatPrice(cart.total),
-      products: cart.products?.map(item => ({
+      items: cart.items?.map(item => ({
         id: item.product?.id,
         name: item.product?.name,
         image: item.product?.image,
+        price_un: formatPrice(item.price_un),
         price: formatPrice(item.price),
         quantity: item.quantity,
       })) || [],

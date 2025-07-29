@@ -6,6 +6,9 @@ module.exports = async () => {
   const router = express.Router();
   const { sheets, spreadsheetId } = await setupSheets();
 
+  // Bibliotecas
+  const pdfKit = require('pdfkit');
+
   // Repositórios
   const userRepo = require('../repositories/UserRepository')(sheets, spreadsheetId);
   const productRepo = require('../repositories/ProductRepository')(sheets, spreadsheetId);
@@ -20,7 +23,7 @@ module.exports = async () => {
   // Controllers (defina antes de usar!)
   const userController = require('../controllers/UserController')(userService);
   const productController = require('../controllers/ProductController')(productService);
-  const cartController = require('../controllers/CartController')(cartService);
+  const cartController = require('../controllers/CartController')(cartService, pdfKit);
 
   // Rotas (somente agora use os controllers)
   router.use('/users', require('./user/routes')(userController, cartController));

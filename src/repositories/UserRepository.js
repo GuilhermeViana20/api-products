@@ -21,7 +21,7 @@ module.exports = (sheets, spreadsheetId) => {
     },
   };
 
-  const userRepository = {
+  return {
     async getLastId() {
       const response = await sheets.spreadsheets.values.get({
         spreadsheetId,
@@ -58,10 +58,10 @@ module.exports = (sheets, spreadsheetId) => {
         range,
         valueInputOption: 'USER_ENTERED',
         insertDataOption: 'INSERT_ROWS',
-        resource: { values: [newUser] },
+        resource: {values: [newUser]},
       });
 
-      return { id, ...userData, created_at: now, updated_at: now };
+      return {id, ...userData, created_at: now, updated_at: now};
     },
 
     async getAll() {
@@ -113,12 +113,10 @@ module.exports = (sheets, spreadsheetId) => {
         spreadsheetId,
         range: `users!A${targetRow}:K${targetRow}`,
         valueInputOption: 'USER_ENTERED',
-        resource: { values: [updatedRow] },
+        resource: {values: [updatedRow]},
       });
 
       return userMapper.fromSheetRow(updatedRow);
     },
   };
-
-  return userRepository;
 };

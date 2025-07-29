@@ -1,121 +1,112 @@
 // src/repositories/CartRepository.js
+const { FLOAT } = require("sequelize");
+
 module.exports = (sheets, spreadsheetId, userRepository) => {
   const range = 'carts!A2:H';
   const getLocalDateTime = require('../utils/getLocalDateTime');
 
-  async function getAllRows() {
+  async function getAllRows(user_id) {
     const response = await sheets.spreadsheets.values.get({ spreadsheetId, range });
-    return response.data.values || [];
+    const rows = response.data.values || [];
+
+    return rows
+        .filter(row => row.length >= 8 && row[7] && Number(row[7]) === user_id)
+        .map(row => ({
+          id: Number(row[0]),
+          store_name: row[1],
+          total: parseFloat(row[2]) || 0,
+          quantity: Number(row[3]),
+          is_active: Number(row[4]) === 1,
+          created_at: row[5],
+          updated_at: row[6],
+          user_id: Number(row[7])
+        }));
+  }
+
+  async function getNextIdAndNow() {
+    const id = await lastItem();
+    const now = getLocalDateTime();
+    return { id, now };
+  }
+
+  function buildCartRow({ id, store_name, total, quantity, user_id, is_active = 1, created_at, updated_at }) {
+    return [
+      id,
+      store_name,
+      Number(total).toFixed(2),
+      Number(quantity),
+      is_active,
+      created_at,
+      updated_at,
+      user_id.toString()
+    ];
+  }
+
+  async function lastItem() {
+    const response = await sheets.spreadsheets.values.get({
+      spreadsheetId,
+      range: 'carts!A2:A',
+    });
+
+    const values = response.data.values || [];
+
+    if (values.length === 0) return 1;
+
+    const ids = values
+        .map(row => parseInt(row[0]))
+        .filter(id => !isNaN(id));
+
+    return Math.max(...ids, 0) + 1;
   }
 
   return {
-    async index(user_id) {
-      const rows = await getAllRows();
-      const user = await userRepository.find(user_id);
-
-      return rows
-        .map((row) => row[7] === user_id.toString() ? mapRow(row, user) : null)
-        .filter(Boolean);
+    index: async (user_id) => {
+      return await getAllRows(user_id);
     },
 
-    async getByUserId(user_id) {
-      const response = await sheets.spreadsheets.values.get({
-        spreadsheetId,
-        range,
+    create: async (cartData) => {
+      const { id, now } = await getNextIdAndNow();
+      const cartRow = buildCartRow({
+        id,
+        store_name: cartData.store_name,
+        total: cartData.total || 0,
+        quantity: cartData.quantity || 0,
+        user_id: cartData.user_id,
+        is_active: 1,
+        created_at: now,
+        updated_at: now
       });
-
-      const rows = response.data.values || [];
-
-      const carts = await Promise.all(rows.map(async (row, index) => {
-        try {
-          const rowUserId = row[7];
-          if (rowUserId !== user_id.toString()) return null;
-
-          return {
-            id: Number(row[0]),
-            store_name: row[1],
-            total: parseFloat(row[2]) || 0,
-            quantity: Number(row[3]),
-            is_active: row[4],
-            created_at: row[5],
-            updated_at: row[6],
-            user: await userRepository.find(user_id),
-            description: `Carrinho de ${row[1]}`,
-          };
-        } catch (error) {
-          console.error(`Erro ao processar linha ${index + 2}:`, error.message);
-          return null;
-        }
-      }));
-
-      return carts.filter(c => c !== null);
-    },
-
-    async create(cartData) {
-      const id = await this.lastItem();
-      const now = getLocalDateTime();
-
-      const { store_name, total, quantity, user_id } = cartData;
 
       await sheets.spreadsheets.values.append({
         spreadsheetId,
         range,
-        valueInputOption: 'USER_ENTERED',
+        valueInputOption: 'RAW',
         insertDataOption: 'INSERT_ROWS',
-        resource: {
-          values: [[
-            id.toString(),
-            store_name,
-            total.toString(),
-            quantity.toString(),
-            true,
-            now,
-            now,
-            user_id.toString()
-          ]],
-        },
-      });
-    },
-
-    async lastItem() {
-      const response = await sheets.spreadsheets.values.get({
-        spreadsheetId,
-        range: 'carts!A2:A',
+        resource: { values: [cartRow] }
       });
 
-      const values = response.data.values || [];
-
-      if (values.length === 0) return 1;
-
-      const ids = values
-        .map((row) => parseInt(row[0]))
-        .filter((id) => !isNaN(id));
-
-      return Math.max(...ids, 0) + 1;
+      return { id, ...cartData, created_at: now, updated_at: now, is_active: 1 };
     },
 
-    async deactivate(cartId) {
-      const rows = await getAllRows();
-      const rowIndex = rows.findIndex(row => Number(row[0]) === Number(cartId));
+    lastItem,
+
+    deactivate: async (cart_id) => {
+      const res = await sheets.spreadsheets.values.get({ spreadsheetId, range });
+      const rows = res.data.values || [];
+      const rowIndex = rows.findIndex(row => Number(row[0]) === cart_id);
+
       if (rowIndex === -1) return;
 
-      const targetRow = rowIndex + 2;
       await sheets.spreadsheets.values.update({
         spreadsheetId,
-        range: `carts!E${targetRow}`,
-        valueInputOption: 'USER_ENTERED',
-        resource: {
-          values: [[false]],
-        },
+        range: `carts!E${rowIndex + 2}`,
+        valueInputOption: 'RAW',
+        resource: { values: [[0]] }
       });
     },
 
-    async update(cartId, data) {
-      const response = await sheets.spreadsheets.values.get({
-        spreadsheetId,
-        range
-      });
-
+    update: async (cartId, data) => {
+      const response = await sheets.spreadsheets.values.get({ spreadsheetId, range });
       const rows = response.data.values || [];
       const rowIndex = rows.findIndex(row => Number(row[0]) === Number(cartId));
       if (rowIndex === -1) throw new Error('Carrinho não encontrado');
@@ -139,5 +130,21 @@ module.exports = (sheets, spreadsheetId, userRepository) => {
         resource: { values: [updatedRow] }
       });
     },
+
+    updateQuantity: async (cart_id, product_id, quantity) => {
+      // Precisa do método getAllItems() implementado em outro lugar
+      const items = await getAllItems();
+      const itemIndex = items.findIndex(item => item.cart_id == cart_id && item.product_id == product_id);
+      if (itemIndex === -1) throw new Error('Item não encontrado');
+
+      items[itemIndex].quantity = quantity;
+
+      await sheets.spreadsheets.values.update({
+        spreadsheetId,
+        range: `cart_items!A${itemIndex + 2}:G${itemIndex + 2}`,
+        valueInputOption: 'USER_ENTERED',
+        resource: { values: [Object.values(items[itemIndex])] }
+      });
+    }
   };
 };
